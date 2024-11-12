@@ -1,0 +1,55 @@
+---
+- hosts: all
+  become: true
+  tasks:
+
+  - name: Add Docker GPG Key (Ubuntu)
+    apt_key:
+      url: https://download.docker.com/linux/ubuntu/gpg
+      state: present
+    when: ansible_distribution == "Ubuntu"
+
+  - name: Add Docker to APT repository (Ubuntu)
+    apt_repository:
+      repo: "deb https://download.docker.com/linux/ubuntu focal stable"
+      state: present
+    when: ansible_distribution == "Ubuntu"
+
+  - name: Install Docker Pre-requisites (Ubuntu)
+    apt:
+      name:
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - software-properties-common
+        - python3-pip
+        - virtualenv
+        - python3-setuptools
+      state: latest
+    when: ansible_distribution == "Ubuntu"
+
+  - name: Install Docker Pre-requisites (CentOS)
+    yum:
+      name:
+        - yum-utils
+        - device-mapper-persistent-data
+        - lvm2
+      state: latest
+    when: ansible_distribution == "CentOS"
+
+  - name: Add Docker Repo to YUM (CentOS)
+    get_url:
+      url: https://download.docker.com/linux/centos/docker-ce.repo
+      dest: /etc/yum.repos.d/docker-ce.repo
+    when: ansible_distribution == "CentOS"
+
+  - name: Install Docker
+    package:
+      name: docker-ce
+      state: latest
+
+  - name: Start Docker Service
+    service:
+      name: docker
+      state: started
+      enabled: yes
